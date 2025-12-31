@@ -7,18 +7,18 @@ export const saveUserCreation = inngest.createFunction(
     {event:"clerk/user.created"},
     async ({event})=>{
         //collecting the data from the event
-        const { user } = event.data;
-        const { id, first_name, last_name,image_url } = user;
-        const email = user.email_addresses.find(e =>
-        e.id === user.primary_email_address_id
-        ).email;
+        const { data } = event
+        // const { id, first_name, last_name,image_url } = user;
+        // const email = user.email_addresses.find(e =>
+        // e.id === user.primary_email_address_id
+        // ).email;
         //updating the database
         await prisma.user.create({
             data:{
-                id:id,
-                name:`${first_name} ${last_name}`,
-                email:email,
-                image:image_url
+                id:data.id,
+                name:`${data.first_name} ${data.last_name}`,
+                email:data.email_addresses[0].email_address,
+                image:data.image_url
             }
         })
     }
@@ -30,20 +30,20 @@ export const saveUserUpdate = inngest.createFunction(
     {id:"save-user-update"},
     {event:"clerk/user.updated"},
     async ({event})=>{
-        const {user} = event.data
-        const { id, first_name, last_name,image_url } = user;
-        const email = user.email_addresses.find(e =>
-        e.id === user.primary_email_address_id
-        ).email;
+        const {data} = event
+        // const { id, first_name, last_name,image_url } = user;
+        // const email = user.email_addresses.find(e =>
+        // e.id === user.primary_email_address_id
+        // ).email;
 
         await prisma.user.update({
             where:{
-                id:id
+                id:data.id
             },
             data:{
-                email:email,
-                image:image_url,
-                name:`${first_name} ${last_name}`
+                name:`${data.first_name} ${data.last_name}`,
+                email:data.email_addresses[0].email_address,
+                image:data.image_url
             }
         })
     }
@@ -55,10 +55,12 @@ export const deleteUser = inngest.createFunction(
     {id:"delete-user"},
     {event:"clerk/user.deleted"},
     async ({event})=>{
-        const {user} = event.data
-        const { id } = user;
+        const {data} = event
+        // const { id } = user;
         await prisma.user.delete({
-            where:{id:id}
+            where:{
+                id:data.id
+            }
         })
     }
 )
